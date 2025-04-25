@@ -3,7 +3,7 @@ import os
 from enum import Enum
 
 
-os.environ["SDL_VIDEO_WINDOW_POS"] = "560,240" # Centers the Window for 1080p Screens
+os.environ["SDL_VIDEO_WINDOW_POS"] = "660,240" # Centers the Window for 1080p Screens
 
 pygame.mixer.init()
 pygame.mixer.music.load("soundfiles/RICARDO.mp3")
@@ -24,7 +24,8 @@ class PlayerDirection(Enum):
     DOWN = (0, 30)
 
 active_direction = PlayerDirection.RIGHT
-timer = 0
+movement_timer = 0
+movement_cooldown = 8
 
 while running:
     
@@ -38,40 +39,51 @@ while running:
 
     
 
-    if active_direction == PlayerDirection.UP and timer == 10:
+    if active_direction == PlayerDirection.UP and movement_timer == 8:
         if player_pos.y > 0:
             player_pos.y += active_direction.value[1]
-            timer = 0
-    elif active_direction == PlayerDirection.DOWN and timer == 10:
+            
+    elif active_direction == PlayerDirection.DOWN and movement_timer == 8:
         if player_pos.y < 570:
             player_pos.y += active_direction.value[1]
-            timer = 0
-    elif active_direction == PlayerDirection.LEFT and timer == 10:
+            
+    elif active_direction == PlayerDirection.LEFT and movement_timer == 8:
         if player_pos.x > 0:
             player_pos.x += active_direction.value[0]
-            timer = 0
-    elif active_direction == PlayerDirection.RIGHT and timer == 10:
+            
+    elif active_direction == PlayerDirection.RIGHT and movement_timer == 8:
         if player_pos.x < 570:
             player_pos.x += active_direction.value[0]
-            timer = 0
+    
+    if movement_timer == 8:
+        movement_timer = 0
+        movement_cooldown = 8
+    
+    movement_timer += 1
+    movement_cooldown += 1
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_w] or keys[pygame.K_UP]:
-        if active_direction != PlayerDirection.DOWN:
+        if active_direction != PlayerDirection.DOWN and movement_cooldown > 8:
             active_direction = PlayerDirection.UP
+            movement_cooldown = 0
     if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-        if active_direction != PlayerDirection.UP:
+        if active_direction != PlayerDirection.UP and movement_cooldown > 8:
             active_direction = PlayerDirection.DOWN
+            movement_cooldown = 0
     if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-        if active_direction != PlayerDirection.RIGHT:
+        if active_direction != PlayerDirection.RIGHT and movement_cooldown > 8:
             active_direction = PlayerDirection.LEFT
+            movement_cooldown = 0
     if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-        if active_direction != PlayerDirection.LEFT:
+        if active_direction != PlayerDirection.LEFT and movement_cooldown > 8:
             active_direction = PlayerDirection.RIGHT
+            movement_cooldown = 0
     
 
     pygame.display.flip()
-    timer += 1
+
+
 
     clock.tick(60)
     
