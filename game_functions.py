@@ -1,45 +1,59 @@
 import pygame
-from enum import Enum
-import random
+from classes import Player, PlayerDirection, PlayerTailPart, ScorePoint
+from constants import FONT
 
-
-def start_screen(screen):
+def start_screen(display, game_surface):
     clock = pygame.time.Clock()
-    pygame.font.init()
-    text = pygame.font.Font(None, 30)
-    image = text.render("Hello Mr. Snek! Press Space to play!",
-                 1, "black")
+
+    surface_hello = FONT.render("Hello Mr. Snek!", 1, "black")
+    surface_button = FONT.render("Press Space to play!", 1, "black")
+    size_hello = FONT.size("Hello Mr. Snek!")
+    size_button = FONT.size("Press Space to play!")
     start_screen = True
     
     while start_screen:
 
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 start_screen = False
+        
+        display.fill("orange")
+        pygame.draw.rect(display, "black", pygame.Rect(99, 49, 602, 602), width=2)
 
-        screen.fill("orange")
+        display.blit(game_surface, (100, 50))
+
+        game_surface.fill("orange")
 
 
-        screen.blit(image, (120,270))
+        game_surface.blit(surface_hello, ((game_surface.get_width() - size_hello[0]) / 2 ,
+                                    (game_surface.get_height() - size_hello[1])/ 2 - 20))
+        game_surface.blit(surface_button, ((game_surface.get_width() - size_button[0])/ 2 ,
+                                     (game_surface.get_height() - size_button[1])/ 2 + 20))
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_SPACE]:
             start_screen = False
-            gameplay_loop(screen)
+            gameplay_loop(display, game_surface)
 
         pygame.display.flip()
 
         clock.tick(60)
 
 
-def game_over_screen(screen):
+def game_over_screen(display, game_surface):
 
     pygame.mixer.music.stop()
     clock = pygame.time.Clock()
     pygame.font.init()
-    text = pygame.font.Font(None, 30)
-    image = text.render("Game Over! Press Enter to go to the Titlescreen",
-                 1, "black")
+
+    surface_game_over = FONT.render("Game Over!", 1, "black")
+    surface_button = FONT.render("Press Enter to go", 1, "black")
+    surface_titlescreen = FONT.render("to the Titlescreen.", 1, "black")
+    size_game_over = FONT.size("Game Over!")
+    size_button = FONT.size("Press Enter to go")
+    size_titlescreen = FONT.size("to the Titlescreen.")
+
     game_over_screen = True
     
     while game_over_screen:
@@ -48,24 +62,36 @@ def game_over_screen(screen):
             if event.type == pygame.QUIT:
                 game_over_screen = False
 
-        screen.fill("orange")
+        pygame.draw.rect(display, "black", pygame.Rect(99, 49, 602, 602), width=2)
+        display.blit(game_surface, (100, 50))
+
+        game_surface.fill("orange")
 
 
-        screen.blit(image, (70,270))
+        game_surface.blit(surface_game_over, ((game_surface.get_width() - size_game_over[0]) / 2 ,
+                                    (game_surface.get_height() - size_game_over[1])/ 2 - 20))
+        game_surface.blit(surface_button, ((game_surface.get_width() - size_button[0])/ 2 ,
+                                     (game_surface.get_height() - size_button[1])/ 2 + 20))
+        game_surface.blit(surface_titlescreen, ((game_surface.get_width() - size_titlescreen[0])/ 2 ,
+                                     (game_surface.get_height() - size_titlescreen[1])/ 2 + 45))
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RETURN]:
             game_over_screen = False
-            start_screen(screen)
+            start_screen(display, game_surface)
 
         pygame.display.flip()
 
         clock.tick(60)
-        
-
     
 
-def gameplay_loop(screen):
+
+def draw_score(display, score):
+
+    surface_score = FONT.render(f"{score}", 1, "black")
+    display.blit(surface_score, (100, 10))
+
+def gameplay_loop(display, game_surface):
 
     pygame.mixer.init()
     pygame.mixer.music.load("soundfiles/RICARDO.mp3")
@@ -73,64 +99,19 @@ def gameplay_loop(screen):
 
     clock = pygame.time.Clock()
     game_loop = True
-
-
-    class Player:
-        def __init__(self):
-            self.pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() /2)
-            self.last_move = None
-            self.tail = []
-
-    class PlayerTailPart:
-        def __init__(self, predecessor, x, y):
-            self.pos = pygame.Vector2(x, y)
-            self.last_move = None
-            self.predecessor = predecessor
-        
-        def move(self):
-            if self.predecessor.last_move == "left":
-                self.pos.x -= 30
-            elif self.predecessor.last_move == "right":
-                self.pos.x += 30
-            elif self.predecessor.last_move == "up":
-                self.pos.y -= 30
-            elif self.predecessor.last_move == "down":
-                self.pos.y += 30
-
-        def set_last_move(self):
-            self.last_move = self.predecessor.last_move
-        
-        def draw(self):
-            tail_rect = pygame.Rect(self.pos.x, self.pos.y, 30, 30)
-            pygame.draw.rect(screen, "purple", rect=tail_rect)
-
+    
     def move_tailparts_and_set_last_moves(tailparts):
         for tailpart in tailparts[::-1]:
             tailpart.move()
             tailpart.last_move = tailpart.predecessor.last_move
-
-    class PlayerDirection(Enum):
-        LEFT = (-30, 0)
-        RIGHT = (30, 0)
-        UP = (0, -30)
-        DOWN = (0, 30)
-
-
-    class ScorePoint:
-        def __init__(self):
-            self.point_pos = pygame.Vector2(random.randrange(0, 600, 30), random.randrange(0, 600, 30))
-            
-        def draw_point(self):
-            point_rect = pygame.Rect(self.point_pos.x, self.point_pos.y, 30, 30)
-            pygame.draw.rect(screen, "green", rect=point_rect)
-
         
-    
+    current_score = 0
     player = Player()
     active_direction = PlayerDirection.RIGHT
     movement_timer = 0
     movement_cooldown = 8
-    active_point = None
+    active_score_point = None
+
 
     while game_loop:
         
@@ -138,17 +119,22 @@ def gameplay_loop(screen):
             if event.type == pygame.QUIT:
                 game_loop = False
 
-        screen.fill("orange")
+        display.fill("orange")
+        pygame.draw.rect(display, "black", pygame.Rect(99, 49, 602, 602), width=2)
 
-        if active_point == None:
-            active_point = ScorePoint()
-        
-        active_point.draw_point()
+        display.blit(game_surface, (100, 50))
 
-        player_rect = pygame.Rect(player.pos.x, player.pos.y, 30, 30)
-        pygame.draw.rect(screen, "purple", rect=player_rect)
+        game_surface.fill("orange")
+
+        draw_score(display, current_score)
+
+        if active_score_point == None:
+            active_score_point = ScorePoint(player)
+
+        player.draw(game_surface)
+        active_score_point.draw(game_surface)
         for tailpart in player.tail:
-            tailpart.draw()
+            tailpart.draw(game_surface)
 
         if active_direction == PlayerDirection.UP and movement_timer == 8:
             if player.pos.y > 0:
@@ -159,7 +145,7 @@ def gameplay_loop(screen):
                 
             else:
                 game_loop = False
-                game_over_screen(screen)
+                game_over_screen(display, game_surface)
                 
         elif active_direction == PlayerDirection.DOWN and movement_timer == 8:
             if player.pos.y < 570:
@@ -169,7 +155,7 @@ def gameplay_loop(screen):
                 player.last_move = "down"
             else:
                 game_loop = False
-                game_over_screen(screen)
+                game_over_screen(display, game_surface)
                 
         elif active_direction == PlayerDirection.LEFT and movement_timer == 8:
             if player.pos.x > 0:
@@ -179,7 +165,7 @@ def gameplay_loop(screen):
                 player.last_move = "left"
             else:
                 game_loop = False
-                game_over_screen(screen)
+                game_over_screen(display, game_surface)
                 
         elif active_direction == PlayerDirection.RIGHT and movement_timer == 8:
             if player.pos.x < 570:
@@ -189,16 +175,18 @@ def gameplay_loop(screen):
                 player.last_move = "right"
             else:
                 game_loop = False
-                game_over_screen(screen)
+                game_over_screen(display, game_surface)
         
         for tailpart in player.tail:
             if tailpart.pos == player.pos:
                 game_loop = False
-                game_over_screen(screen)
+                game_over_screen(display, game_surface)
 
-        if player.pos == active_point.point_pos:
-            active_point = None
+        if player.pos == active_score_point.pos:
+            active_score_point = None
             
+            current_score += 10
+
             if len(player.tail) == 0:
                 predecessor =  player
             else:
