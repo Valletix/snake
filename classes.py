@@ -56,8 +56,8 @@ class ScorePoint:
             
             
         def draw(self, game_surface):
-            point_rect = pygame.Rect(self.pos.x, self.pos.y, 30, 30)
-            pygame.draw.rect(game_surface, "green", rect=point_rect)
+            point_circle_center = (self.pos.x + 15, self.pos.y + 15)
+            pygame.draw.circle(game_surface, "green", point_circle_center, 15)
 
 
 class PlayerDirection(Enum):

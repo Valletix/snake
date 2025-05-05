@@ -2,6 +2,59 @@ import pygame
 from classes import Player, PlayerDirection, PlayerTailPart, ScorePoint
 from constants import FONT
 
+
+def random_input(display, game_surface):
+
+    clock = pygame.time.Clock()
+    input_box = pygame.Rect(150, 150, 250, 50)
+    text = ""
+
+
+    random_screen = True
+
+    while random_screen:
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                random_screen = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    print(text)
+                    text = ""
+                elif event.key == pygame.K_BACKSPACE:
+                    text = text[:-1]
+                else:
+                    if len(text) < 10:
+                        text += event.unicode
+
+        
+
+        display.fill("orange")
+        pygame.draw.rect(display, "black", pygame.Rect(99, 49, 602, 602), width=2)
+
+        game_surface.fill("orange")
+
+        txt_surface = FONT.render(text, True, "black")
+
+        pygame.draw.rect(game_surface, "black", input_box, 2)
+
+        game_surface.blit(txt_surface, (input_box.x+5, input_box.y+5))
+
+        display.blit(game_surface, (100, 50))
+        
+
+        
+        
+
+
+
+        pygame.display.flip()
+
+        clock.tick(60)
+
+
+
 def start_screen(display, game_surface):
     clock = pygame.time.Clock()
 
@@ -94,7 +147,7 @@ def draw_score(display, score):
 def gameplay_loop(display, game_surface):
 
     pygame.mixer.init()
-    pygame.mixer.music.load("soundfiles/RICARDO.mp3")
+    pygame.mixer.music.load("ressources/soundfiles/RICARDO.mp3")
     pygame.mixer.music.play()
 
     clock = pygame.time.Clock()
